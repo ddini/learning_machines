@@ -65,11 +65,12 @@ class ANN(object):
         """
 
         last_input = input_vec
+        
         layer_output = None
         for i in range(len(self.weights)):
             
             #Calculate local field
-            local_field = np.dot(input_vec, self.weights[i])
+            local_field = np.dot(last_input, self.weights[i])
 
             #Calculate output vector
             #-----------------------
