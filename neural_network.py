@@ -10,7 +10,7 @@ class ANN(object):
         given an input and output ndarray, or given a batch of examples.
     """
 
-    def __init__(self, layer_shapes, eta=0.5, alpha=0.1):
+    def __init__(self, layer_shapes, eta=0.5, alpha=0.1, sigmoid_scale=1.0):
         """
             'layer_shapes' refers to the number of (fully connected)
             nodes in each layer, beginning with the input layer.
@@ -24,6 +24,7 @@ class ANN(object):
         #Capture network parameters
         self.eta = eta
         self.alpha = alpha
+        self.sig_scale = sigmoid_scale
         self.layer_shapes = layer_shapes
 
         #Create and initialize weights
@@ -46,7 +47,7 @@ class ANN(object):
             self.weights.append(new_arr)
         #-----------------------------
     
-    def forward(self, input_vec, labels=None):
+    def forward(self, input_vec, labels=None, rec_acts=False):
         """
             Execute forward propagation. 
             
@@ -54,19 +55,31 @@ class ANN(object):
                 Input shape is (N x p), where p is number of dimensions,
                 and N is number of examples.
             
-            Returns: an ndarray in the shape:
-                (N x o) where o is the number of nodes in the output
-                layer.
+            Returns: 
+                -A dictionary containing:
+                    'output':
+                        an ndarray in the shape:
+                        (N x o) where o is the number of nodes in the output
+                        layer.
             
-            If 'labels' is not None, returns a tuple:
-                -ndarray in the shape of output layer
-                -instantaneous error signal, in the shape
-                 of output layer.
+                    If 'labels' is not None, "errors":
+                        -ndarray in the shape of output layer
+                        -instantaneous error signal, in the shape
+                        of output layer.
+                    If 'rec_acts' is True, "activations":
+                        -A list of ndarrays,
+                        in which each element is the activation values
+                        for the corresponding layer.
         """
 
         last_input = input_vec
         
         layer_output = None
+        
+        #*list* of ndarrays, representing
+        #activation values for correspondign layer.
+        activations = []
+
         for i in range(len(self.weights)):
             
             #Calculate local field
@@ -74,28 +87,45 @@ class ANN(object):
 
             #Calculate output vector
             #-----------------------
-            z = np.exp(-1*local_field)
+            z = np.exp(-1*self.sig_scale*local_field)
+            
             layer_output = np.divide(z, 1+z)
             #-----------------------
 
+            #Collect activation layers
+            #-------------------------
+            if rec_acts:
+                activations.append(np.array(layer_output))
+            #-------------------------
+
             last_input = layer_output
+
+        #Compile output
+        output_dict = {}
+
+        if labels is not None:
+            output_dict["error"] = np.subtract(labels, layer_output)
         
-        return layer_output
+        if rec_acts:
+            output_dict["activations"] = activations
+        
+        output_dict["output"] = layer_output
+
+        return output_dict
     
     def backprop(self, input, label):
-        pass
 
         #Execute forward propagation, using 'label' in
         #order to obtain instantaneous error signal.
-        network_out, error = self.forward(input, labels=label)
+        network_out, error = self.forward(input, labels=label, rec_acts=True)
+        
+        for i in reversed(range(len(self.weights))):
+            pass
+            #Calculate delta for this layer
 
-        #Use errors to recursively calculate gradient
-        #values for each weight in network.
-        #For layer L to 1
-            
-            #Calculate dWji values
+            #Obtain dW values
 
-            #Store delta values
+            #Perform update
         
         #Accumulate useful statistics about learning process.
 
@@ -119,14 +149,28 @@ def activation(x, act_type="sigmoid"):
     else:
         return None
 
-def sigmoid_func(x):
+def activation_prime(x, act_type="sigmoid"):
+    """
+    """
+
+    if act_type == "sigmoid":
+        return sigmoid_prime(x)
+    else:
+        return None
+
+def sigmoid_prime(x):
+    """
+    """
+
+
+def sigmoid_func(x, a=1.0):
     """
     """
 
     if x>=0:
-        z = exp(-x)
+        z = exp(-a*x)
     else:
-        z = exp(x)
+        z = exp(a*x)
     
     return z / (1+z)
 
