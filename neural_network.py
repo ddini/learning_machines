@@ -79,6 +79,7 @@ class ANN(object):
         #*list* of ndarrays, representing
         #activation values for correspondign layer.
         activations = []
+        activations.append(input_vec)
 
         for i in range(len(self.weights)):
             
@@ -113,19 +114,53 @@ class ANN(object):
 
         return output_dict
     
-    def backprop(self, input, label):
+    def backprop(self, input_sig_array, label):
 
         #Execute forward propagation, using 'label' in
         #order to obtain instantaneous error signal.
-        network_out, error = self.forward(input, labels=label, rec_acts=True)
+        output_dict = self.forward(input_sig_array, labels=label, rec_acts=True)
         
-        for i in reversed(range(len(self.weights))):
-            pass
-            #Calculate delta for this layer
+        error_signal_vector = output_dict["error"]
+        
+        activation_vectors = output_dict["activations"]
+        
+        queued_weight_updates = []
+
+        #Compute delta vector for outupt
+        #layer nodes before proceeding
+        #through hidden layer nodes
+        #-----------------------------
+        activation_prime = self.sig_scale*(activation_vectors[-1]* (np.subtract(1, activation_vectors[-1])))
+        delta = error_signal_vector*activation_prime
+        
+        dW = self.eta*np.dot(delta, activation_vectors[-2])
+
+        outer_product <--
+
+        queued_weight_updates.append(dW)
+        #-----------------------------
+
+        #From N-2 down to 0
+        for i in reversed(range(len(self.weights)-1)):
+            
+            #Calculate delta vector (local gradient) for this layer
+            activation_prime = self.sig_scale*np.dot(activation_vectors[i], (np.subtract(1, activation_vectors[i])) )
+            w_matrix = self.weights[i]
+            delta = np.dot(activation_prime, np.dot(w_matrix, delta) )
+
+            # Acquire weight update
+            # Given local gradient values for each node in
+            # current (hidden) layer, compute weight update
+            #
+            # TODO: Add momentum term to update.
+            dW = self.eta*np.dot(delta, activation_vectors[i])
 
             #Obtain dW values
-
-            #Perform update
+            queued_weight_updates.append(dW)
+        
+        #Perform update
+        for w_u in queued_weight_updates:
+            pass
         
         #Accumulate useful statistics about learning process.
 
