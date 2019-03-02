@@ -133,9 +133,9 @@ class ANN(object):
         activation_prime = self.sig_scale*(activation_vectors[-1]* (np.subtract(1, activation_vectors[-1])))
         delta = error_signal_vector*activation_prime
         
-        dW = self.eta*np.dot(delta, activation_vectors[-2])
-
-        outer_product <--
+        #Outer product to produce entire matrix
+        #of updates
+        dW = self.eta*np.outer(delta, activation_vectors[-2])
 
         queued_weight_updates.append(dW)
         #-----------------------------
@@ -144,16 +144,20 @@ class ANN(object):
         for i in reversed(range(len(self.weights)-1)):
             
             #Calculate delta vector (local gradient) for this layer
-            activation_prime = self.sig_scale*np.dot(activation_vectors[i], (np.subtract(1, activation_vectors[i])) )
+            activation_prime = self.sig_scale*(activation_vectors[i+1] * (np.subtract(1, activation_vectors[i+1])) )
+            
             w_matrix = self.weights[i]
-            delta = np.dot(activation_prime, np.dot(w_matrix, delta) )
+            
+            #Element-wise product
+            delta = activation_prime*np.dot(w_matrix, delta)
 
             # Acquire weight update
             # Given local gradient values for each node in
-            # current (hidden) layer, compute weight update
+            # current (hidden) layer, compute weight update,
+            # for each weight in the weight matrix
             #
             # TODO: Add momentum term to update.
-            dW = self.eta*np.dot(delta, activation_vectors[i])
+            dW = self.eta*np.outer(delta, activation_vectors[i])
 
             #Obtain dW values
             queued_weight_updates.append(dW)
