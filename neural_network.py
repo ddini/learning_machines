@@ -146,7 +146,7 @@ class ANN(object):
             #Calculate delta vector (local gradient) for this layer
             activation_prime = self.sig_scale*(activation_vectors[i+1] * (np.subtract(1, activation_vectors[i+1])) )
             
-            w_matrix = self.weights[i]
+            w_matrix = self.weights[i+1]
             
             #Element-wise product
             delta = activation_prime*np.dot(w_matrix, delta)
