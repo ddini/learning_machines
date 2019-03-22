@@ -42,8 +42,8 @@ class ANN(object):
         for i in range(len(self.layer_shapes)-1):
             
             #Create initialized weight matrix,
-            #of shape (L-1, L)
-            new_arr = np.random.rand(self.layer_shapes[i], self.layer_shapes[i+1])
+            #of shape (shapes(L-1)+1, shapes(L))
+            new_arr = np.random.rand(self.layer_shapes[i]+1, self.layer_shapes[i+1])
             self.weights.append(new_arr)
         #-----------------------------
     
@@ -54,6 +54,7 @@ class ANN(object):
             input: Numpy ndarray containing input values.
                 Input shape is (N x p), where p is number of dimensions,
                 and N is number of examples.
+                -Note: Input is assumed to contain bias value  (+1) as first element
             
             Returns: 
                 -A dictionary containing:
@@ -88,9 +89,14 @@ class ANN(object):
 
             #Calculate output vector
             #-----------------------
-            z = np.exp(-1*self.sig_scale*local_field)
             
+            #Apply activations to local field values
+            z = np.exp(-1*self.sig_scale*local_field)
             layer_output = np.divide(z, 1+z)
+            
+            #Add bias +1 signal to form complete layer output
+            output_with_bias = np.hstack( ([1], layer_output) )
+            
             #-----------------------
 
             #Collect activation layers
@@ -99,7 +105,7 @@ class ANN(object):
                 activations.append(np.array(layer_output))
             #-------------------------
 
-            last_input = layer_output
+            last_input = output_with_bias
 
         #Compile output
         output_dict = {}
@@ -163,8 +169,13 @@ class ANN(object):
             queued_weight_updates.append(dW)
         
         #Perform update
-        for w_u in queued_weight_updates:
-            pass
+        num_updates = len(queued_weight_updates)
+        for i in range(num_updates):
+            w_delta = queued_weight_updates.pop()
+            
+            #Element wise matrix addition
+            self.weights[i]+=w_delta
+            
         
         #Accumulate useful statistics about learning process.
 
