@@ -78,14 +78,15 @@ class ANN(object):
         layer_output = None
         
         #*list* of ndarrays, representing
-        #activation values for correspondign layer.
+        #activation values for corresponding layer.
         activations = []
         activations.append(input_vec)
 
+        #Calculate activations for each layer
         for i in range(len(self.weights)):
             
             #Calculate local field
-            local_field = np.dot(last_input, self.weights[i])
+            local_field = np.dot(last_input.T, self.weights[i])
 
             #Calculate output vector
             #-----------------------
@@ -94,9 +95,10 @@ class ANN(object):
             z = np.exp(-1*self.sig_scale*local_field)
             layer_output = np.divide(z, 1+z)
             
-            #Add bias +1 signal to form complete layer output
-            output_with_bias = np.hstack( ([1], layer_output) )
-            
+            # Make output a column vector (to conform to network input)
+            # Add bias +1 signal to form complete layer output
+            layer_output = layer_output.reshape( layer_output.shape[1],1 )
+            output_with_bias = np.vstack( ( np.array([1]), layer_output) )
             #-----------------------
 
             #Collect activation layers
