@@ -1,10 +1,14 @@
 import numpy as np
 import functools
 
-class MultiLayerPerceptron:
+class MultilayerPerceptron:
     """
         Python and Numpy implementation of
         feedforward neural network.
+    
+        mlp = MultilayerPerceptron((2, 2, 1))
+        mlp.fit(X,Y)
+        mlp.predict(X)
     """
 
     def __init__(self, layers=None):
@@ -19,12 +23,12 @@ class MultiLayerPerceptron:
         # Initialize weights
         self.weights = []
         for i in range(len(layers)-1):
-            weights.append(np.random.normal(size=(layers[i+1], layers[i]+1)) )
+            self.weights.append(np.random.normal(size=(layers[i+1], layers[i]+1)) )
         
     def reinitialize_weights(self):
         self.weights = []
-        for i in range(len(layers)-1):
-            weights.append(np.random.normal(size=(layers[i+1], layers[i]+1)) )
+        for i in range(len(self.layers)-1):
+            self.weights.append(np.random.normal(size=(self.layers[i+1], self.layers[i]+1)) )
     
     def forward_prop(self, inputs, activations=False):
         output = []
@@ -59,7 +63,7 @@ class MultiLayerPerceptron:
         """
         
         # forward prop with inputs
-        Y = forward_prop(inputs, activations=True)
+        Y = self.forward_prop(inputs, activations=True)
 
         # Compute delta values for output layer
         delta = (targets-Y[-1][0, :])*Y[-1][0, :]*(1-Y[-1][0, :])
@@ -101,10 +105,10 @@ class MultiLayerPerceptron:
         for m_idx in range(len(updates)):
             self.weights[ len(self.weights)-1-m_idx ]+=updates[m_idx]
     
-    def epoch(X,Y, num_iterations=100):
+    def epoch(self, X,Y, num_iterations=100):
         for _ in range(num_iterations):
             for idx in range(X.shape[0]):
-                backward_prop(X[idx:idx+1], Y[idx:idx+1])
+                self.backward_prop(X[idx:idx+1], Y[idx:idx+1])
     
     def fit(self, X,Y, num_epochs=1, num_iterations=100):
         for _ in range(num_epochs):
