@@ -11,7 +11,7 @@ class MultilayerPerceptron:
         mlp.predict(X)
     """
 
-    def __init__(self, layers=None):
+    def __init__(self, layers=None, eta=0.03):
         """
             Layers is a list of integers,
             indicating size of layers, starting
@@ -115,4 +115,4 @@ class MultilayerPerceptron:
             self.epoch(X,Y, num_iterations)
 
     def predict(self, X):
-        pass
+        return self.forward_prop(X)[0]
