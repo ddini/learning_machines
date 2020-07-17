@@ -2,6 +2,7 @@
 Learning machine approaches and variants.
 
 ### Multilayer Perceptron
+#### Pure Python Multilayer Perceptron implementation.
 
 ```
   aMLP = MultilayerPerceptron((1,15,1), eta=0.001)
