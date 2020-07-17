@@ -1,5 +1,5 @@
 # learning_machines
-Learning machine approaches and variants.
+Learning machine approaches and variants - in pure Python.
 
 ### Multilayer Perceptron
 #### Pure Python Multilayer Perceptron implementation.
